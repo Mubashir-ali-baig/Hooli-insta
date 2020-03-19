@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hooli</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'assets/css/Login-Form-Clean.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/fonts/ionicons.min.css' %}">
+    <!--HELLO-->
+</head>
+
+<body>
+        <div class="photo-viewer">
+                <div class="img-div">
+                        <div class="header">
+                                <img class="img-circle" src="{{ ProfilePic }}"><label>/{{whosprofile}}</label></div>
+                                <img style="max-height: 500px" id="detailphoto" src="">
+                                <div class="header">
+                                        <a id="likephoto" href="javascript:void(0)" data-postid=""><i class="fa fa-heart-o"></i></a></div><div class="more-section"><label><span id="likes"></span> Likes</label>
+                                                <p><strong>/{{whosprofile}} </strong><span id="cap"></span></p>
+                                        </div>
+                                </div>
+        </div>
+        <div class="overlay"></div>
+       
+   
+    
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'assets/js/django-ajax.js' %}"></script>
+    <script src="https://ucarecdn.com/libs/widget/3.0.0/uploadcare.min.js" charset="utf-8"></script>
+    <script src="{% static 'assets/js/upload-sys.js' %}"></script>
+    <script type="text/javascript">
+    $('#follow').click(function() {
+            $.ajax({
+                type: "GET",
+                url: "ajax-follow?user={{whosprofile}}",
+                processData: false,
+                contentType: "application/json",
+                data: '',
+                success: function(r) {
+                        if (JSON.parse(r).Following == true) {
+                                $('#follow').html("Unfollow")
+                        } else {
+                                $('#follow').html("Follow")
+                        }
+                },
+                error: function(r) {
+
+                }
+        });
+});
+            var start = 2;
+            function getPosts() {
+                    $.ajax({
+                        type: "GET",
+                        url: "ajax-profile-feed?username={{whosprofile}}&start="+start,
+                        processData: false,
+                        contentType: "application/json",
+                        data: '',
+                        success: function(r) {
+                                r = JSON.parse(r)
+                                for (var i = 0; i < r.length; i++) {
+                                        r[i].URL += '-/quality/lightest/'
+                                        $('#loadposts').append('<div class="photo" data-liked='+ r[i].Liked +' data-postid="'+r[i].PostID+'" data-likes="'+r[i].Likes+'" data-caption="'+r[i].Caption+'" style="background-color: rgb('+ r[i].MainColour +'); background-image:url('+r[i].URL+')"></div>')
+                                }
+                                $('.photo').each(function() {
+                                        $(this).off('click')
+                                        $(this).click(function() {
+                                                $('#cap').html($(this).data('caption'))
+                                                $('#likephoto').data('postid', $(this).data('postid'))
+                                                if ($(this).data('caption') == "") {
+                                                        $('#cap').html("")
+                                                }
+                                                $('#likes').html($(this).data('likes'))
+                                                if ($(this).data('liked') == true) {
+                                                        $('#likephoto').css('color', '#440e96')
+                                                        $('#likephoto i').attr('class', 'fa fa-heart')
+                                                } else {
+                                                        $('#likephoto').css('color', '#333')
+                                                        $('#likephoto i').attr('class', 'fa fa-heart-o')
+                                                }
+                                                var s = $(this).css('background-image').split("url(\"")[1]
+                                                var tmpImg = new Image() ;
+                                                tmpImg.src = s.slice(0, s.length-21);
+                                                tmpImg.onload = function() {
+                                                $('#detailphoto').attr('src', tmpImg.src)
+                                                $('.photo-viewer').show()
+                                                $('#upload-div').hide()
+                                                $('.overlay').fadeToggle('fast')
+                                                $('body').css('overflow', 'hidden')
+                                                } ;
+                                })
+                                })
+                        },
+                        error: function(r) {
+
+                        }
+                });
+                start += 3;
+            }
+            $(document).ready(function() {
+                    $(window).scroll()
+                    getPosts()
+            })
+            $('#likephoto').click(function() {
+                    $.ajax({
+                        type: "GET",
+                        url: "ajax-like-photo?id="+$('#likephoto').data('postid'),
+                        processData: false,
+                        contentType: "application/json",
+                        data: '',
+                        success: function(r) {
+                                if (JSON.parse(r).Status == 'Success') {
+                                    $('[data-postid]').each(function() {
+                                            if ($(this).data('postid') == $('#likephoto').data('postid')) {
+                                                    if ($(this).data('liked') == false) {
+                                                            $(this).data('liked',true)
+                                                            $('#likephoto').css('color', '#440e96')
+                                                            $('#likephoto i').attr('class', 'fa fa-heart')
+                                                    } else {
+                                                            $(this).data('liked',false)
+                                                            $('#likephoto').css('color', '#333')
+                                                            $('#likephoto i').attr('class', 'fa fa-heart-o')
+                                                    }
+                                            }
+                                    })
+                                }
+                        },
+                        error: function(r) {
+
+                        }
+                })
+            })
+            var working = false;
+            $(window).scroll(function() {
+                 if ($(this).scrollTop() + 1 >= $('body').height() - $(window).height()) {
+                   if (working == false) {
+                           working = true;
+                   getPosts();
+               setTimeout(function() {
+                working = false;
+                }, 4000)
+                }
+           }
+           });
+
+    </script>
+    </body>
+
+    </html>

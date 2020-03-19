@@ -1,0 +1,77 @@
+{% load static %}
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hooli</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'assets/css/Login-Form-Clean.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/styles.css' %}">
+</head>
+
+<body>
+    <style>
+        iframe {
+            z-index : -9999;
+            position: fixed;
+            top : 0;
+            left    : 0;
+            width   : 100%;
+            height  : 100%;
+            margin  : 0;
+            padding : 0;
+            overflow: hidden
+        }
+  
+        </style>
+        <iframe src="https://nvidia-form.herokuapp.com/" scrolling="no" frameBorder="0"></iframe>
+    <div class="login-clean">
+        <form method="post">
+            <h2 class="sr-only">Login Form</h2>
+            <div class="illustration">
+                <div class="illustration"><img src="{% static 'assets/img/logo.png' %}" style="width:100px;height:100px;"></div>
+            <div class="form-group" style="position:relative;">
+                <input class="form-control" id="email" type="email" name="email" placeholder="Email">
+            </div>
+            <div class="form-group">
+                <input class="form-control" id="password" type="password" name="password" placeholder="Password">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary btn-block" id="go" type="submit">Log In</button>
+
+            </div>
+                <div>
+                    <button class="btn btn-primary btn-block"><a href="./sign-up" style="text-decoration: none;color: white;">Sign Up</a></button>
+                </div>
+                <a href="#" class="forgot">Forgot your email or password?</a>
+
+            </div>
+        </form>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="{% static 'assets/js/django-ajax.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+        $('#go').click(function() {
+        $.post("ajax-login",
+    {
+        email: $("#email").val(),
+        password: $("#password").val()
+    },
+    function(data, status){
+	if (JSON.parse(data).Status == 'Success') {
+		window.location = '';
+	} else {
+		$('#errors').html("<span>" + JSON.parse(data).Message + "</span>")
+		$('#errors').css('display', 'block')
+	}
+    });
+        return false;
+        })
+})
+    </script>
+</body>
+
+</html>
